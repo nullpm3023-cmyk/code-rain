@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>極簡黑魂計分系統 - 專業存證版</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --warning: #f39c12;
+            --bg-dark: #000000;
+            --panel-dark: #0a0a0a;
+            --input-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-dim: #888;
+            --border-color: #333;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 左側控制面板 */
+        .left-panel {
+            flex: 1;
+            padding: 40px 50px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* 右側排名清單 */
+        .right-panel {
+            flex: 1.2;
+            padding: 40px 50px;
+            background-color: var(--panel-dark);
+            overflow-y: auto;
+        }
+
+        h2 { border-left: 5px solid var(--primary); padding-left: 15px; margin-bottom: 25px; font-size: 24px; }
+        h3 { font-size: 14px; color: var(--text-dim); margin-bottom: 12px; font-weight: normal; letter-spacing: 1px; }
+
+        .name-section { margin-bottom: 40px; }
+        input#playerName {
+            width: 100%;
+            padding: 15px;
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 20px;
+            box-sizing: border-box;
+        }
+        input#playerName:focus { outline: none; border-color: var(--primary); background: #222; }
+
+        .grid-3-cols {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .btn-score {
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 22px 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 22px;
+            transition: all 0.2s;
+        }
+        .btn-score:hover { background: var(--primary); transform: translateY(-2px); }
+
+        .settings-section {
+            margin-top: auto;
+            padding-top: 25px;
+            border-top: 1px solid #222;
+        }
+        .config-input {
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .status-box {
+            background: rgba(0, 123, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary);
+            display: none;
+        }
+
+        /* 匯出按鈕樣式 */
+        .export-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-export {
+            background: #333;
+            color: #ccc;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-export:hover { background: #444; color: #fff; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--text-dim); padding: 15px 10px; border-bottom: 2px solid #333; font-size: 14px; }
+        td { padding: 18px 10px; border-bottom: 1px solid #111; font-size: 18px; }
+        .rank-1 { color: #ffd700; font-size: 24px; font-weight: bold; }
+        .reset-btn { background: none; border: none; color: #333; cursor: pointer; font-size: 12px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="left-panel">
+        <h2>計分控制台</h2>
+
+        <div id="lastStatus" class="status-box"></div>
+
+        <div class="name-section">
+            <h3>Step 1. 成員名稱</h3>
+            <input type="text" id="playerName" placeholder="請輸入姓名" list="historyNames" autocomplete="off">
+            <datalist id="historyNames"></datalist>
+        </div>
+
+        <div class="score-section">
+            <h3>Step 2. 點選分數 (自動送出)</h3>
+            <div id="dynamicButtons" class="grid-3-cols"></div>
+        </div>
+
+        <div class="settings-section">
+            <h3>⚙️ 數值設定 / 紀錄匯出</h3>
+            <div id="configGrid" class="grid-3-cols">
+                <input type="number" class="config-input" value="10" onchange="saveConfig()">
+                <input type="number" class="config-input" value="20" onchange="saveConfig()">
+                <input type="number" class="config-input" value="30" onchange="saveConfig()">
+                <input type="number" class="config-input" value="50" onchange="saveConfig()">
+                <input type="number" class="config-input" value="100" onchange="saveConfig()">
+                <input type="number" class="config-input" value="-10" onchange="saveConfig()">
+            </div>
+            
+            <div class="export-group">
+                <button class="btn-export" onclick="exportHistory()">💾 匯出加分明細</button>
+                <button class="btn-export" onclick="exportRanking()">📊 匯出最終排名</button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="reset-btn" onclick="resetData()">清空所有紀錄</button>
+                <span style="font-size: 11px; color: #333;">Data Auto-Saved</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <h2>即時排名板</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">名次</th>
+                    <th width="55%">成員姓名</th>
+                    <th width="25%">總分</th>
+                </tr>
+            </thead>
+            <tbody id="rankDisplay"></tbody>
+        </table>
+    </div>
+
+<script>
+    let players = {};
+    let actionLogs = []; // 用於存放每一筆加分紀錄
+    let buttonConfigs = [10, 20, 30, 50, 100, -10];
+
+    window.onload = function() {
+        const savedConfig = localStorage.getItem('score_cfg_v4');
+        if (savedConfig) {
+            buttonConfigs = JSON.parse(savedConfig);
+            const inputs = document.querySelectorAll('.config-input');
+            buttonConfigs.forEach((val, i) => { if(inputs[i]) inputs[i].value = val; });
+        }
+        renderButtons();
+    };
+
+    function saveConfig() {
+        const inputs = document.querySelectorAll('.config-input');
+        buttonConfigs = Array.from(inputs).map(input => parseInt(input.value) || 0);
+        localStorage.setItem('score_cfg_v4', JSON.stringify(buttonConfigs));
+        renderButtons();
+    }
+
+    function renderButtons() {
+        const container = document.getElementById('dynamicButtons');
+        container.innerHTML = "";
+        buttonConfigs.forEach(val => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-score';
+            btn.innerText = (val > 0 ? '+' : '') + val;
+            btn.onclick = () => submitScore(val);
+            container.appendChild(btn);
+        });
+    }
+
+    function submitScore(scoreValue) {
+        const nameInput = document.getElementById('playerName');
+        const name = nameInput.value.trim();
+
+        if (!name) {
+            alert("請先輸入名稱");
+            nameInput.focus();
+            return;
+        }
+
+        players[name] = (players[name] || 0) + scoreValue;
+
+        // 存入紀錄明細
+        const now = new Date();
+        const timeStr = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+        actionLogs.push({
+            time: timeStr,
+            name: name,
+            change: scoreValue,
+            total: players[name]
+        });
+
+        updateUI(name, scoreValue);
+        nameInput.value = "";
+        nameInput.focus();
+    }
+
+    function updateUI(lastUser, lastScore) {
+        const sorted = Object.keys(players)
+            .map(n => ({ name: n, score: players[n] }))
+            .sort((a, b) => b.score - a.score);
+
+        const tbody = document.getElementById('rankDisplay');
+        tbody.innerHTML = "";
+        
+        let lastRank = 0;
+        sorted.forEach((p, i) => {
+            const rank = i + 1;
+            if (p.name === lastUser) lastRank = rank;
+            let rc = rank === 1 ? "rank-1" : (rank <= 3 ? "rank-2" : "");
+            tbody.innerHTML += `<tr><td class="${rc}">${rank}</td><td>${p.name}</td><td><strong>${p.score}</strong></td></tr>`;
+        });
+
+        const status = document.getElementById('lastStatus');
+        status.style.display = "block";
+        status.innerHTML = `<strong>${lastUser}</strong> 獲得 ${lastScore} 分 | 目前排名第 ${lastRank}`;
+
+        const dl = document.getElementById('historyNames');
+        dl.innerHTML = "";
+        Object.keys(players).forEach(n => dl.innerHTML += `<option value="${n}">`);
+    }
+
+    // --- 匯出功能 ---
+
+    function downloadCSV(csvContent, fileName) {
+        // 加入 BOM (UTF-8) 讓 Excel 認得中文
+        const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function exportHistory() {
+        if (actionLogs.length === 0) return alert("尚無紀錄可匯出");
+        let csv = "時間,成員姓名,變動分數,變動後總分\n";
+        actionLogs.forEach(row => {
+            csv += `${row.time},${row.name},${row.change},${row.total}\n`;
+        });
+        downloadCSV(csv, "計分詳細紀錄.csv");
+    }
+
+    function exportRanking() {
+        const sorted = Object.keys(players)
+            .map(n => ({ name: n, score: players[n] }))
+            .sort((a, b) => b.score - a.score);
+        
+        if (sorted.length === 0) return alert("目前尚無排名資料");
+        let csv = "名次,成員姓名,最終總分\n";
+        sorted.forEach((p, i) => {
+            csv += `${i + 1},${p.name},${p.score}\n`;
+        });
+        downloadCSV(csv, "最終排名表.csv");
+    }
+
+    function resetData() {
+        if(confirm("確定清空紀錄嗎？這將刪除目前的排名與流水帳紀錄！")) {
+            players = {};
+            actionLogs = [];
+            document.getElementById('rankDisplay').innerHTML = "";
+            document.getElementById('lastStatus').style.display = "none";
+        }
+    }
+</script>
+</body>
+</html>
