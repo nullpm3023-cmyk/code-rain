@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="zh-Hant"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Code Rain App&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: black;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden; /* 防止出現捲軸 */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>canvas {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: block;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;canvas id="canvas"&gt;&lt;/canvas&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const canvas = document.getElementById('canvas');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const ctx = canvas.getContext('2d');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 設定畫布大小</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function resize() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>canvas.width = window.innerWidth;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>canvas.height = window.innerHeight;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>window.addEventListener('resize', resize);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resize();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 設定字元（包含數字、英文、日文片假名）</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%"\'#&amp;_(),.;:?!\\|{}&lt;&gt;[]ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const fontSize = 16;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const columns = canvas.width / fontSize;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 每列的起始位置</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const drops = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>for (let i = 0; i &lt; columns; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>drops[i] = 1;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function draw() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 建立漸層透明效果（這是讓程式碼有「尾巴」的關鍵）</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(0, 0, canvas.width, canvas.height);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = '#0F0'; // 綠色字體</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.font = fontSize + 'px monospace';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; drops.length; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const text = characters.charAt(Math.floor(Math.random() * characters.length));</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillText(text, i * fontSize, drops[i] * fontSize);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// 隨機重置回頂部，增加錯落感</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (drops[i] * fontSize &gt; canvas.height &amp;&amp; Math.random() &gt; 0.975) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>drops[i] = 0;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>drops[i]++;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>setInterval(draw, 33); // 約 30 FPS</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
